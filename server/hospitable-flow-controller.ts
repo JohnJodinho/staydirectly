@@ -4,7 +4,21 @@ import { storage } from './storage-factory';
 import { createServerApiClient } from './hospitable-client';
 import dotenv from "dotenv";
 import countries from 'i18n-iso-countries';
-import enLocale from 'i18n-iso-countries/langs/en.json';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs/promises';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const enLocalePath = path.join(__dirname, '../node_modules/i18n-iso-countries/langs/en.json');
+const enLocaleContent = await fs.readFile(enLocalePath, 'utf-8');
+const enLocale = JSON.parse(enLocaleContent);
+
+countries.registerLocale(enLocale);
+
+
+
 // Import correct type for properties from schema
 
 dotenv.config();
@@ -482,7 +496,7 @@ export async function connectHospitable(req: Request, res: Response): Promise<vo
     // Create a new customer
     if (action === 'customer') {
       console.log(`[API Route] Creating new customer with data: ${JSON.stringify(req.body)}`);
-      
+
       const client = createServerApiClient();
       const customer = await client.createCustomer(req.body);
       

@@ -5,7 +5,7 @@ dotenv.config();
 
 // Helper to get PG connection config based on environment
 export function getDbConfig(): PoolConfig {
-  const mode = process.env.APP_MODE;  
+  const mode = process.env.APP_ENV;  
   const appMode = mode || "development"; // Default to development if not set
 
   
