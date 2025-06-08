@@ -1,0 +1,77 @@
+/**
+ * Styling for Revyoos widget to ensure proper positioning within our property detail page
+ */
+
+/* Override the default Revyoos widget positioning */
+.revyoos-embed-widget.revyoos-widget {
+  position: static !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  z-index: 1 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+/* Make sure the Revyoos dialog appears above other elements */
+.ry-dialog {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Ensure the container is a proper size */
+#revyoos-container {
+  position: relative !important;
+  height: auto !important;
+  min-height: 600px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: visible !important;
+}
+
+/* Fix positioning of any absolutely positioned elements */
+.ry-widget {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Ensure buttons and interactive elements have proper styling */
+.ry-widget button, 
+.ry-widget .ry-btn {
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.ry-widget button:hover, 
+.ry-widget .ry-btn:hover {
+  filter: brightness(1.05) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Add subtle animations for a better experience */
+.ry-widget .ry-review {
+  transition: transform 0.2s ease !important;
+}
+
+.ry-widget .ry-review:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Add fallback styling for loading state */
+.reviews-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background-color: #f9f9f9;
+  border-radius: 0.5rem;
+  text-align: center;
+}
