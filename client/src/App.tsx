@@ -51,7 +51,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <APIProvider apiKey="AIzaSyCuBSnwo25Ek5tf1Nme839U9DzWLo2UWNE">
+      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
         <Router />
       </APIProvider>
       <Toaster />

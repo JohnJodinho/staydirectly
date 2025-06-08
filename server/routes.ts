@@ -142,6 +142,8 @@ Sitemap: https://staydirectly.com/sitemap.xml
     }
   });
 
+
+
   app.get("/api/properties/featured", async (req: Request, res: Response) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 4;
