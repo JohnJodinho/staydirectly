@@ -458,8 +458,10 @@ export async function markPropertiesForPublishing(req: Request, res: Response): 
  */
 export async function connectHospitable(req: Request, res: Response): Promise<void> {
   try {
-    const { action, customerId, code } = req.body;
-    
+    const { customerId, code } = req.body;
+    const action = req.query.action as string || req.body.action;
+    console.log(`[API Route] connectHospitable called with action: ${action}, customerId: ${customerId}, code: ${code}`);
+    console.log(`[API Route] Request body: ${JSON.stringify(req.body)}`);
     // Generate auth link for a customer
     if (action === 'auth-link' && customerId) {
       // Create URL for Hospitable Connect OAuth flow
@@ -480,6 +482,7 @@ export async function connectHospitable(req: Request, res: Response): Promise<vo
     // Create a new customer
     if (action === 'customer') {
       console.log(`[API Route] Creating new customer with data: ${JSON.stringify(req.body)}`);
+      
       const client = createServerApiClient();
       const customer = await client.createCustomer(req.body);
       

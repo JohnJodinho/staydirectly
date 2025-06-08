@@ -75,7 +75,7 @@ Sitemap: https://staydirectly.com/sitemap.xml
   registerHospitableAuthRoutes(authRouter);
   
   // Hospitable flow routes
-  app.post('/api/hospitable/connect', hospitable_controller.connectHospitable);
+  // app.post('/api/hospitable/connect', hospitable_controller.connectHospitable);
   app.post('/api/hospitable/import-listings', hospitable_controller.importCustomerListings);
   app.post('/api/hospitable/fetch-property-images', hospitable_controller.fetchPropertyImages);
   app.post('/api/hospitable/publish-properties', hospitable_controller.markPropertiesForPublishing);

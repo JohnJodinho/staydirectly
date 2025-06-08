@@ -55,6 +55,7 @@ export default function HospitableConnect() {
       const userTimezone = timezone || 'America/New_York';
       
       const response = await apiRequest('POST', '/api/hospitable/connect?action=customer', {
+        
         id: uniqueId, // Required by Hospitable API
         email,
         name,
