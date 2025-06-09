@@ -209,6 +209,15 @@ Sitemap: https://staydirectly.com/sitemap.xml
         propertyData.publishedAt = null;
         delete propertyData.unpublish;
       }
+      if (propertyData.bookingWidgetHtml) {
+        propertyData.bookingWidgetUrl = propertyData.bookingWidgetHtml;
+        delete propertyData.bookingWidgetHtml;
+      }
+      if (propertyData.reviewsWidgetHtml) {
+        propertyData.reviewWidgetCode = propertyData.reviewsWidgetHtml;
+        delete propertyData.reviewsWidgetHtml;
+      }
+
       
       const updatedProperty = await storage.updateProperty(id, propertyData);
       res.json(updatedProperty);

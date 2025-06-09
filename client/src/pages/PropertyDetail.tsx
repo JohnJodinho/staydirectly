@@ -9,6 +9,7 @@ import RevyoosDirectEmbed from '@/components/RevyoosDirectEmbed';
 import PropertyGallery from '@/components/PropertyGallery';
 import AirbnbImageOptimizer from '@/components/AirbnbImageOptimizer';
 import GoogleMapView from '@/components/GoogleMapView';
+import DynamicReviewWidget from '@/components/DynamicReviewWidget';
 
 // Function to convert amenity IDs to display names
 const getAmenityDisplayName = (amenityId: string): string => {
@@ -645,7 +646,10 @@ const PropertyDetail: React.FC = () => {
               
               {/* Using the RevyoosDirectEmbed component with fallback UI */}
               <div className="relative w-full min-h-[600px]">
-                <RevyoosDirectEmbed className="w-full mx-auto" />
+                <DynamicReviewWidget 
+                  embedCode={property.reviewWidgetCode} 
+                  className="w-full min-h-[600px]" 
+                />
               </div>
             </div>
             
