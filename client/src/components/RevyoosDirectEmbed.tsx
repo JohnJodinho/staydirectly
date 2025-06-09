@@ -19,48 +19,59 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   const [useFallback, setUseFallback] = useState(false);
 
   useEffect(() => {
-    // Function to check if Revyoos widget has rendered
+    // Remove any existing unwanted widget
+    const removeUnwantedWidget = () => {
+      const unwantedWidget = document.querySelector('[id^="scp_iframe_general_"]');
+      if (unwantedWidget) {
+        unwantedWidget.remove();
+      }
+    };
+
+    // Clear any old script
+    const existingScript = document.querySelector('script[data-revyoos-widget]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Inject the Revyoos script
+    const script = document.createElement('script');
+    script.defer = true;
+    script.type = 'application/javascript';
+    script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
+    script.setAttribute('data-revyoos-widget', 'eyJwIjoiNjVlMGZiNTg5MjBlYWEwMDYxMjdlNWVjIn0=');
+    document.head.appendChild(script);
+
+    // Widget detection and retry logic
     const checkRevyoosWidget = () => {
       const revyoosWidget = document.querySelector('.revyoos-embed-widget .ry-widget');
       if (revyoosWidget) {
         setIsRevyoosLoaded(true);
       } else if (loadAttempts < 5) {
         setLoadAttempts(prev => prev + 1);
-        // Try again in 2 seconds
         setTimeout(checkRevyoosWidget, 2000);
       } else {
-        // After 5 attempts (10 seconds total), show fallback
         setUseFallback(true);
       }
     };
 
-    // Clean up any previous scripts to avoid duplicates
-    const existingScript = document.querySelector('script[data-revyoos-widget]');
-    if (existingScript) {
-      existingScript.remove();
-    }
-    
-    // Create the script element with the exact attributes as specified
-    const script = document.createElement('script');
-    script.defer = true;
-    script.type = 'application/javascript';
-    script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
-    script.setAttribute('data-revyoos-widget', 'eyJwIjoiNjVlMGZiNTg5MjBlYWEwMDYxMjdlNWVjIn0=');
-    
-    // Add it to the document head
-    document.head.appendChild(script);
-    
-    // Start checking for the widget after a slight delay
-    setTimeout(checkRevyoosWidget, 2000);
-    
-    // Cleanup when component unmounts
+    // Start checking for widget
+    const widgetCheckTimeout = setTimeout(checkRevyoosWidget, 2000);
+
+    // Repeatedly check and remove unwanted widget
+    const unwantedWidgetInterval = setInterval(() => {
+      removeUnwantedWidget();
+    }, 1000); // Every second
+
+    // Cleanup on unmount
     return () => {
-      // Use the reference to the script we created
-      if (script && script.parentNode) {
+      clearTimeout(widgetCheckTimeout);
+      clearInterval(unwantedWidgetInterval);
+      if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
     };
   }, [loadAttempts]);
+
   
   return (
     <div id="revyoos-container" className={className}>

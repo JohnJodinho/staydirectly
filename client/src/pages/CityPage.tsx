@@ -26,7 +26,7 @@ const CityPage: React.FC = () => {
   // Get properties for this city
   const { data: properties, isLoading: isLoadingProperties } = useQuery({
     queryKey: [`/api/cities/${cityName}/properties`],
-    queryFn: () => getCityProperties(cityName, 3), // Limit to 3 featured properties
+    queryFn: () => getCityProperties(cityName), // Limit to 3 featured properties
     enabled: !!cityName,
   });
 
