@@ -19,6 +19,12 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use((err, req, res, next) => {
+  if (err.status === 429) {
+    return res.status(429).json({ error: err.message || 'Rate limit exceeded.' });
+  }
+  next(err);
+});
 
 // Log all external requests from server side:
 const originalHttpRequest = http.request;

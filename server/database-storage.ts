@@ -118,35 +118,24 @@ export class DatabaseStorage implements IStorage {
 
   async searchProperties(query: string, filters?: any): Promise<Property[]> {
     try {
-      // Handle special case for isPublished
+      const conditions = [eq(properties.isActive, true)];
+
+      // Handle special keyword commands
       if (query === 'isPublished:true') {
-        return await db.select()
-          .from(properties)
-          .where(and(
-            eq(properties.isActive, true),
-            sql`${properties.publishedAt} IS NOT NULL`
-          ));
+        conditions.push(sql`${properties.publishedAt} IS NOT NULL`);
       } else if (query === 'isPublished:false') {
-        return await db.select()
-          .from(properties)
-          .where(and(
-            eq(properties.isActive, true),
-            sql`${properties.publishedAt} IS NULL`
-          ));
+        conditions.push(sql`${properties.publishedAt} IS NULL`);
+      } else if (query && query.trim() !== '') {
+        const searchTerm = `%${query}%`;
+        conditions.push(sql`(
+          ${properties.name} ILIKE ${searchTerm} OR
+          ${properties.city} ILIKE ${searchTerm} OR
+          ${properties.country} ILIKE ${searchTerm} OR
+          ${properties.location} ILIKE ${searchTerm}
+        )`);
       }
 
-      // Build conditions array for regular search
-      const conditions = [
-        eq(properties.isActive, true),
-        sql`(
-          ${properties.name} ILIKE ${`%${query}%`} OR
-          ${properties.city} ILIKE ${`%${query}%`} OR
-          ${properties.country} ILIKE ${`%${query}%`} OR
-          ${properties.location} ILIKE ${`%${query}%`}
-        )`
-      ];
-      
-      // Add filter conditions
+      // Apply filters
       if (filters) {
         if (filters.minPrice) {
           conditions.push(gte(properties.price, filters.minPrice));
@@ -160,14 +149,20 @@ export class DatabaseStorage implements IStorage {
         if (filters.bathrooms) {
           conditions.push(gte(properties.bathrooms, filters.bathrooms));
         }
-        if (filters.maxGuests) {
-          conditions.push(gte(properties.maxGuests, filters.maxGuests));
+        if (filters.guests || filters.maxGuests) {
+          conditions.push(gte(properties.maxGuests, filters.guests || filters.maxGuests));
         }
-        if (filters.type) {
-          conditions.push(eq(properties.type, filters.type));
+        if (filters.city) {
+          conditions.push(eq(properties.city, filters.city));
+        }
+        if (filters.country) {
+          conditions.push(eq(properties.country, filters.country));
+        }
+        if (filters.type || filters.propertyType) {
+          conditions.push(eq(properties.type, filters.type || filters.propertyType));
         }
         if (filters.isPublished !== undefined) {
-          if (filters.isPublished === true) {
+          if (filters.isPublished) {
             conditions.push(sql`${properties.publishedAt} IS NOT NULL`);
           } else {
             conditions.push(sql`${properties.publishedAt} IS NULL`);
@@ -175,15 +170,15 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
-      // Execute query with all conditions
       return await db.select()
         .from(properties)
         .where(and(...conditions));
     } catch (error) {
-      console.error("Error in searchProperties:", error);
+      console.error("❌ Error in searchProperties:", error);
       return [];
     }
   }
+
 
   async createProperty(property: InsertProperty): Promise<Property> {
     // Generate slug from title (or name if title is not available) if not provided

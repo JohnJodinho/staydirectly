@@ -37,37 +37,73 @@ function getLocationLabel(properties: Property[]): string {
 }
 
 
-const SearchResults: React.FC = () => {
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split('?')[1]);
-  const query = searchParams.get('q') || '';
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState<any>({});
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('map');
-  const [selectedProperty, setSelectedProperty] = useState<number | string | null>(null);
+  const SearchResults: React.FC = () => {
+    const [location] = useLocation();
+    
+    
+    
 
-  // Parse any filter parameters from URL
-  useEffect(() => {
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const bedrooms = searchParams.get('bedrooms');
-    const propertyType = searchParams.get('propertyType');
+
+
     
-    const newFilters: any = {};
-    if (minPrice) newFilters.minPrice = parseInt(minPrice);
-    if (maxPrice) newFilters.maxPrice = parseInt(maxPrice);
-    if (bedrooms) newFilters.bedrooms = parseInt(bedrooms);
-    if (propertyType) newFilters.propertyType = propertyType;
+    const [currentPage, setCurrentPage] = useState(1);
     
-    setFilters(newFilters);
-  }, [location]);
+    const [viewMode, setViewMode] = useState<'grid' | 'map'>('map');
+    const [selectedProperty, setSelectedProperty] = useState<number | string | null>(null);
+
+    const [query, setQuery] = useState<string>('');
+    const [filters, setFilters] = useState<any>({});
+
+
+    useEffect(() => {
+      const searchParams = new URLSearchParams(window.location.search);
+      console.log("Full search params:");
+      for (const [key, value] of searchParams.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
+      const q = searchParams.get('q') || '';
+      setQuery(q);
+
+      const newFilters: any = {};
+      for (const [key, value] of searchParams.entries()) {
+        switch (key) {
+          case 'minPrice':
+          case 'maxPrice':
+          case 'bedrooms':
+          case 'bathrooms':
+          case 'guests':
+            newFilters[key] = parseInt(value);
+            break;
+          case 'amenities':
+            newFilters[key] = value.split(',');
+            break;
+          default:
+            if (key !== 'q') newFilters[key] = value;
+        }
+      }
+
+      setFilters(newFilters);
+    }, [location]);
+
+
+
 
   const pageSize = 12;
 
   const { data: properties, isLoading, isError } = useQuery({
     queryKey: ['/api/properties/search', query, filters],
-    queryFn: () => searchProperties(query, filters),
+    queryFn: () => {
+      console.log("✅ Query:", query);
+      console.log("✅ Filters:", filters);
+      return searchProperties(query, filters);
+    },
+    enabled: true,
   });
+
+
+
+
 
   // Calculate pagination values
   const totalItems = properties?.length || 0;

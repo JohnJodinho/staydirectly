@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { queryClient } from './queryClient';
 
+
 // API client for communicating with Hospitable and our backend API
 class HospitableApiClient {
   private baseUrl: string;
@@ -199,15 +200,23 @@ export async function getFeaturedProperties(): Promise<any[]> {
   }
 }
 
-export async function searchProperties(query: string): Promise<any[]> {
+export async function searchProperties(query: string, filters?: any): Promise<any[]> {
+  const params = new URLSearchParams({ q: query });
+
+  if (filters && Object.keys(filters).length > 0) {
+    params.append('filters', JSON.stringify(filters));
+  }
+
   try {
-    const response = await axios.get(`/api/properties/search?q=${encodeURIComponent(query)}`);
+    const response = await axios.get(`/api/properties/search?${params.toString()}`);
     return response.data;
   } catch (error) {
     console.error('Error searching properties:', error);
     return [];
   }
 }
+
+
 
 export async function getProperty(id: number): Promise<any> {
   try {
@@ -232,6 +241,7 @@ export async function getPropertyReviews(propertyId: number): Promise<any[]> {
 // Favorites API functions
 export async function addFavorite(userId: number, propertyId: number): Promise<any> {
   try {
+    
     const response = await axios.post('/api/favorites', { userId, propertyId });
     // Invalidate favorites queries to refresh data
     queryClient.invalidateQueries({ queryKey: ['/api/users', userId, 'favorites'] });

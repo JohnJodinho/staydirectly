@@ -17,6 +17,14 @@ import { registerHospitableAuthRoutes } from "./hospitable-auth";
 import { createServerApiClient } from "./hospitable-client";
 import hospitable_controller from "./hospitable-flow-controller";
 import dotenv from "dotenv";
+import {
+  generalRateLimiter,
+  strictRateLimiter,
+  userRateLimiter,
+  createCustomRateLimiter,
+} from './utils/rateLimiter';
+
+
 dotenv.config();
 
 // Helper function to extract customerId and listingId from platformId
@@ -48,6 +56,13 @@ function extractPropertyIds(platformId: string): { customerId: string | null; li
   return { customerId: null, listingId: platformId };
 }
 
+const customSearchLimiter = createCustomRateLimiter({
+  windowMs: 30 * 1000, // 30 seconds
+  max: 5,
+  keyGenerator: (req) => req.ip + ':' + (req.query.q ?? ''),
+  message: 'Too many search requests. Please wait a moment and try again.',
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // SEO Routes
   const seoRouter = Router();
@@ -76,12 +91,12 @@ Sitemap: https://staydirectly.com/sitemap.xml
   
   // Hospitable flow routes
   // app.post('/api/hospitable/connect', hospitable_controller.connectHospitable);
-  app.post('/api/hospitable/import-listings', hospitable_controller.importCustomerListings);
-  app.post('/api/hospitable/fetch-property-images', hospitable_controller.fetchPropertyImages);
-  app.post('/api/hospitable/publish-properties', hospitable_controller.markPropertiesForPublishing);
+  app.post('/api/hospitable/import-listings',userRateLimiter, hospitable_controller.importCustomerListings);
+  app.post('/api/hospitable/fetch-property-images', userRateLimiter, hospitable_controller.fetchPropertyImages);
+  app.post('/api/hospitable/publish-properties',strictRateLimiter, hospitable_controller.markPropertiesForPublishing);
   
   // API route for fetching property images
-  app.get('/api/hospitable/property-images/:customerId/:listingId', async (req: Request, res: Response) => {
+  app.get('/api/hospitable/property-images/:customerId/:listingId',userRateLimiter,  async (req: Request, res: Response) => {
     try {
       const { customerId, listingId } = req.params;
       const position = parseInt(req.query.position as string || '0');
@@ -101,8 +116,8 @@ Sitemap: https://staydirectly.com/sitemap.xml
   });
   
   // API client library for frontend
-  app.get('/api/hospitable/api-client', (req: Request, res: Response) => {
-    // This route provides client-side configuration for the Hospitable API
+  app.get('/api/hospitable/api-client',generalRateLimiter , (req: Request, res: Response) => {
+    //This route provides client-side configuration for the Hospitable API
     res.json({
       baseUrl: 'https://connect.hospitable.com/api/v1',
       apiVersion: '2022-11-01',
@@ -114,7 +129,7 @@ Sitemap: https://staydirectly.com/sitemap.xml
   app.use(seoRouter);
   app.use('/api', authRouter);
   // Properties API
-  app.get("/api/properties", async (req: Request, res: Response) => {
+  app.get("/api/properties", generalRateLimiter, async (req: Request, res: Response) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
@@ -144,7 +159,7 @@ Sitemap: https://staydirectly.com/sitemap.xml
 
 
 
-  app.get("/api/properties/featured", async (req: Request, res: Response) => {
+  app.get("/api/properties/featured",  async (req: Request, res: Response) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 4;
       const properties = await storage.getFeaturedProperties(limit);
@@ -154,18 +169,25 @@ Sitemap: https://staydirectly.com/sitemap.xml
     }
   });
 
-  app.get("/api/properties/search", async (req: Request, res: Response) => {
+  app.get("/api/properties/search", customSearchLimiter, async (req: Request, res: Response) => {
     try {
-      const query = req.query.q as string || "";
+      console.log(`[API Route] Full URL: ${req.protocol}://${req.get('host')}${req.originalUrl}`);
+      console.log(`[API Route] Query = ${req.query.q}`);
+      console.log(`[API Route] Filters (raw) = ${req.query.filters}`);
+
+      const query = (req.query.q as string) || "";
       const filters = req.query.filters ? JSON.parse(req.query.filters as string) : undefined;
+
       const properties = await storage.searchProperties(query, filters);
       res.json(properties);
     } catch (error) {
+      console.error('Error in /api/properties/search:', error);
       res.status(500).json({ message: "Failed to search properties" });
     }
   });
 
-  app.get("/api/properties/:id", async (req: Request, res: Response) => {
+
+  app.get("/api/properties/:id", generalRateLimiter,  async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const property = await storage.getProperty(id);
@@ -180,7 +202,7 @@ Sitemap: https://staydirectly.com/sitemap.xml
     }
   });
 
-  app.post("/api/properties", async (req: Request, res: Response) => {
+  app.post("/api/properties", strictRateLimiter, async (req: Request, res: Response) => {
     try {
       const propertyData = insertPropertySchema.parse(req.body);
       const property = await storage.createProperty(propertyData);
