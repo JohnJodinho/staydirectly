@@ -10,6 +10,8 @@ import PropertyGallery from '@/components/PropertyGallery';
 import AirbnbImageOptimizer from '@/components/AirbnbImageOptimizer';
 import GoogleMapView from '@/components/GoogleMapView';
 import DynamicReviewWidget from '@/components/DynamicReviewWidget';
+import NeighborhoodInfo from '@/components/NeighborhoodInfo';
+import NearbyPlaces from '@/components/NearbyPlaces';
 
 // Function to convert amenity IDs to display names
 const getAmenityDisplayName = (amenityId: string): string => {
@@ -733,6 +735,10 @@ const PropertyDetail: React.FC = () => {
               </div>
             </div>
 
+            {/* Nearby landmarks and points of interest (formerly hardcoded) */}
+            <NearbyPlaces latitude={property.latitude} longitude={property.longitude} />
+            {/* Nearby landmarks and points of interest (formerly hardcoded) */}
+            <NearbyPlaces latitude={property.latitude} longitude={property.longitude} />
             {/* Nearby Landmarks and Points of Interest */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
               <h2 className="text-xl font-bold mb-6">Nearby Places</h2>
@@ -828,7 +834,7 @@ const PropertyDetail: React.FC = () => {
                   <span className="text-gray-600">2.9 miles</span>
                 </div>
               </div>
-            </div>
+            </div>   
 
             {/* FAQ Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
