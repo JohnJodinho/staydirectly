@@ -10,7 +10,7 @@ import PropertyGallery from '@/components/PropertyGallery';
 import AirbnbImageOptimizer from '@/components/AirbnbImageOptimizer';
 import GoogleMapView from '@/components/GoogleMapView';
 import DynamicReviewWidget from '@/components/DynamicReviewWidget';
-
+import NearbyPlaces from '@/components/NearbyPlaces';
 // Function to convert amenity IDs to display names
 const getAmenityDisplayName = (amenityId: string): string => {
   const amenityMap: Record<string, string> = {
@@ -278,8 +278,7 @@ const PropertyDetail: React.FC = () => {
       "security": <ShieldCheck className="h-5 w-5 text-gray-600" />,
       "elevator": <Building className="h-5 w-5 text-gray-600" />,
     };
-    
-    // First try to find an exact match in the map
+    swtwt,  // First try to find an exact match in the map
     if (iconMap[amenity]) {
       return iconMap[amenity];
     }
@@ -322,16 +321,16 @@ const PropertyDetail: React.FC = () => {
   // Breadcrumb items
   // Extract state from location (assuming format like "Beverly Hills, CA")
   const locationParts = property.location.split(',');
-  const state = locationParts.length > 1 ? locationParts[1].trim() : 'CA';
+ t,wt, const state = locationParts.length > 1 ? locationParts[1].trim() : 'CA';
   
-  const breadcrumbItems = [
+waw,  const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: state, href: `/search?q=${state}` },
     { label: property.city, href: `/city/${property.city}` },
     { label: property.name }
   ];
   
-  return (
+  return (WA,
     <>
       <Meta 
         title={`${property.title || property.name} in ${property.city}${property.state ? `, ${property.state}` : ''} | StayDirectly`}
@@ -347,7 +346,7 @@ const PropertyDetail: React.FC = () => {
         image={property.imageUrl}
         price={property.price}
         ratingValue={property.rating || 0}
-        reviewCount={property.reviewCount || 0}
+ tzw,at,       reviewCount={property.reviewCount || 0}
         address={property.location}
       />
       
@@ -734,102 +733,8 @@ const PropertyDetail: React.FC = () => {
             </div>
 
             {/* Nearby Landmarks and Points of Interest */}
-            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-              <h2 className="text-xl font-bold mb-6">Nearby Places</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-blue-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <span>Miami International Airport</span>
-                  </div>
-                  <span className="text-gray-600">8.2 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-green-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-green-600" />
-                    </div>
-                    <span>South Beach</span>
-                  </div>
-                  <span className="text-gray-600">1.3 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-purple-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <span>Wynwood Arts District</span>
-                  </div>
-                  <span className="text-gray-600">3.7 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-amber-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-amber-600" />
-                    </div>
-                    <span>Bayside Marketplace</span>
-                  </div>
-                  <span className="text-gray-600">2.1 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-red-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-red-600" />
-                    </div>
-                    <span>Vizcaya Museum & Gardens</span>
-                  </div>
-                  <span className="text-gray-600">5.8 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-teal-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-teal-600" />
-                    </div>
-                    <span>Little Havana</span>
-                  </div>
-                  <span className="text-gray-600">4.3 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-orange-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-orange-600" />
-                    </div>
-                    <span>Lincoln Road Mall</span>
-                  </div>
-                  <span className="text-gray-600">1.8 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-pink-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-pink-600" />
-                    </div>
-                    <span>Frost Museum of Science</span>
-                  </div>
-                  <span className="text-gray-600">3.2 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-indigo-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-indigo-600" />
-                    </div>
-                    <span>Coconut Grove</span>
-                  </div>
-                  <span className="text-gray-600">6.7 miles</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-emerald-50 p-2 rounded-full mr-3">
-                      <MapPin className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <span>Brickell City Centre</span>
-                  </div>
-                  <span className="text-gray-600">2.9 miles</span>
-                </div>
-              </div>
-            </div>
-
+            
+            <NearbyPlaces latitude={property.latitude} longitude={property.longitude} />
             {/* FAQ Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
               <h2 className="text-xl font-bold mb-6">Frequently asked questions</h2>
