@@ -1,4 +1,7 @@
 // src/components/NearbyPlaces.tsx
+
+declare const google: any;
+
 import React, { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 
@@ -16,6 +19,9 @@ interface NearbyPlacesProps {
   radius?: number;
   types?: string[];
 }
+
+
+
 
 export default function NearbyPlaces({ latitude, longitude, radius = 2000, types = ['restaurant', 'supermarket', 'park']} : NearbyPlacesProps) {
   const [places, setPlaces] = useState<Place[]>([]);
