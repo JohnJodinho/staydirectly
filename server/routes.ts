@@ -114,7 +114,37 @@ Sitemap: https://staydirectly.com/sitemap.xml
       res.status(500).json({ message: 'Error fetching property images' });
     }
   });
+  // ----------------------------------------------------------------------------
+  // API Route: Get nearby places from Google Places Web API (Server-side fallback)
+  // ----------------------------------------------------------------------------
+  app.get('/api/nearby', async (req, res) => {
+    const { lat, lng } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'Missing latitude or longitude' });
+    }
   
+    try {
+      const url = new URL('https://places.googleapis.com/v1/places:searchNearby');
+      url.searchParams.set('key', process.env.GOOGLE_API_KEY!);
+      url.searchParams.set('fields', 'places.name,places.vicinity,places.icon');
+      url.searchParams.set('locationRestriction', JSON.stringify({ circle: { center: { latitude: parseFloat(lat as string), longitude: parseFloat(lng as string) }, radius: 2000 } }))
+      url.searchParams.set('includedTypes', JSON.stringify(['restaurant', 'supermarket', 'park']));
+  
+      const response = await fetch(url.toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+
+      if (!response.ok) {
+        throw new Error('API responded with non-200');
+      }
+      const data = await response.json();
+
+      res.json(data?.places || []);
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to fetch nearby places' });
+    }
+  });
   // API client library for frontend
   app.get('/api/hospitable/api-client',generalRateLimiter , (req: Request, res: Response) => {
     //This route provides client-side configuration for the Hospitable API
