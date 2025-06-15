@@ -118,43 +118,48 @@ Sitemap: https://staydirectly.com/sitemap.xml
   // API Route: Get nearby places from Google Places Web API (Server-side fallback)
   // ----------------------------------------------------------------------------
   app.get('/api/nearby', async (req, res) => {
-    const { lat, lng } = req.query;
+  const { lat, lng } = req.query;
 
-    if (!lat || !lng) {
-      return res.status(400).json({ error: 'Missing latitude or longitude' });
-    }
+  if (!lat || !lng) {
+    return res.status(400).json({ error: 'Missing latitude or longitude' });
+  }
   
-    try {
-      const url = new URL('https://places.googleapis.com/v1/places:searchNearby');
-      url.searchParams.set('key', process.env.VITE_GOOGLE_MAPS_API_KEY!);
-      url.searchParams.set('fields', 'places.name,places.vicinity,places.icon');
-      url.searchParams.set('locationRestriction', JSON.stringify({ circle: { center: { latitude: parseFloat(lat as string), longitude: parseFloat(lng as string) }, radius: 2000 } }))
-      url.searchParams.set('includedTypes', JSON.stringify(['restaurant', 'supermarket', 'park']));
+  try {
+    const url = 'https://places.googleapis.com/v1/places:searchNearby';
+
+    const body = {
+      locationRestriction: {
+        circle: {
+          center: { latitude: parseFloat(lat as string), longitude: parseFloat(lng as string) },
+          radius: 2000
+        }
+      },
+      includedTypes: ['restaurant', 'supermarket', 'park'],
+      maxResultCount: 10
+    };
   
-      const response = await fetch(url.toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-
-      if (!response.ok) {
-        throw new Error('API responded with non-200');
-      }
-      const data = await response.json();
-
-      res.json(data?.places || []);
-
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to fetch nearby places' });
-    }
-  });
-  // API client library for frontend
-  app.get('/api/hospitable/api-client',generalRateLimiter , (req: Request, res: Response) => {
-    //This route provides client-side configuration for the Hospitable API
-    res.json({
-      baseUrl: 'https://connect.hospitable.com/api/v1',
-      apiVersion: '2022-11-01',
-      clientId: process.env.NEXT_PUBLIC_HOSPITABLE_CLIENT_ID
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': process.env.VITE_GOOGLE_MAPS_API_KEY! // <- API key in header
+      },
+      body: JSON.stringify(body),
     });
-  });
-  
+
+    if (!response.ok) {
+      console.error(await response.text()); // See what Google responds
+      throw new Error('API responded with non-200');
+    }
+    const data = await response.json();
+
+    res.json(data?.places || []);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch nearby places' });
+  }
+});
   // Apply SEO and auth routes
   app.use(seoRouter);
   app.use('/api', authRouter);
