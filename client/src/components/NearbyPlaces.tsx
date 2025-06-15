@@ -23,19 +23,10 @@ export default function NearbyPlaces({ latitude, longitude, radius = 2000, types
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof google === "undefined" ||
-        !google?.maps ||
-        !google?.maps?.places) {
-      setError("Google Maps API is unavailable. Please check if you have an ad-blocker.");
-      setLoading(false);
-      return;
-    }
     if (!latitude || !longitude) return;
 
-    setLoading(true);
-    setError(null);
-
-    try {
+    // First try accessing Google Maps API directly
+    if (typeof google !== "undefined" && google?.maps?.places) {
       const service = new google.maps.places.PlacesService(document.createElement("div"));
       service.nearbySearch(
         { location: new google.maps.LatLng(latitude, longitude), radius, type: types },
@@ -51,15 +42,28 @@ export default function NearbyPlaces({ latitude, longitude, radius = 2000, types
             );
             setLoading(false);
           } else {
-            setError("Unable to find nearby places.");
-            setLoading(false);
+            fallbackToServer();
           }
         }
       );
-    } catch (err) {
-      console.error(err);
-      setError("An error occurred while retrieving nearby places.");
-      setLoading(false);
+    } else {
+      fallbackToServer();
+    }
+    // Fallback to server-side API
+    async function fallbackToServer() {
+      try {
+        const res = await fetch(`/api/nearby?lat=${latitude}&lng=${longitude}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPlaces(data);
+        } else {
+          setError('Unable to fetch nearby places');
+        }
+      } catch (err) {
+        setError('Unable to fetch nearby places');
+      } finally {
+        setLoading(false);
+      }
     }
   }, [latitude, longitude]);
 
