@@ -126,7 +126,7 @@ Sitemap: https://staydirectly.com/sitemap.xml
   
     try {
       const url = new URL('https://places.googleapis.com/v1/places:searchNearby');
-      url.searchParams.set('key', process.env.GOOGLE_API_KEY!);
+      url.searchParams.set('key', process.env.VITE_GOOGLE_MAPS_API_KEY!);
       url.searchParams.set('fields', 'places.name,places.vicinity,places.icon');
       url.searchParams.set('locationRestriction', JSON.stringify({ circle: { center: { latitude: parseFloat(lat as string), longitude: parseFloat(lng as string) }, radius: 2000 } }))
       url.searchParams.set('includedTypes', JSON.stringify(['restaurant', 'supermarket', 'park']));
