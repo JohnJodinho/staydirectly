@@ -117,47 +117,47 @@ Sitemap: https://staydirectly.com/sitemap.xml
   // ----------------------------------------------------------------------------
   // API Route: Get nearby places from Google Places Web API (Server-side fallback)
   // ----------------------------------------------------------------------------
+
+
   app.get('/api/nearby', async (req, res) => {
   const { lat, lng } = req.query;
+  if (!lat || !lng) return res.status(400).json({ error: 'Missing latitude or longitude' });
 
-  if (!lat || !lng) {
-    return res.status(400).json({ error: 'Missing latitude or longitude' });
-  }
-  
   try {
     const url = 'https://places.googleapis.com/v1/places:searchNearby';
-
     const body = {
       locationRestriction: {
         circle: {
           center: { latitude: parseFloat(lat as string), longitude: parseFloat(lng as string) },
-          radius: 2000
-        }
+          radius: 2000,
+        },
       },
       includedTypes: ['restaurant', 'supermarket', 'park'],
-      maxResultCount: 10
+      maxResultCount: 10,
     };
-  
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Goog-Api-Key': process.env.GOOGLE_API_KEY!, // <- make sure this is set in .env
-        'X-Goog-FieldMask': 'places.displayName,places.vicinity,places.icon,places.id'
+        'X-Goog-Api-Key': process.env.GOOGLE_API_KEY!,
+        // Proper field mask: choose fields supported by Nearby Search
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.id,places.icon',
       },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      console.error(await response.text()); // See what Google responds with
-      throw new Error('API responded with non-200');
+      const text = await response.text();
+      console.error('Places API error:', text);
+      return res.status(response.status).json({ error: 'Places API error', details: text });
     }
-    const data = await response.json();
 
-    res.json(data?.places || []);
+    const data = await response.json();
+    res.json(data.places || []);
 
   } catch (err) {
-    console.error(err);
+    console.error('Server error fetching nearby places:', err);
     res.status(500).json({ error: 'Failed to fetch nearby places' });
   }
 });
