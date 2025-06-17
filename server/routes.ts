@@ -142,7 +142,7 @@ Sitemap: https://staydirectly.com/sitemap.xml
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': process.env.GOOGLE_API_KEY!,
         // Proper field mask: choose fields supported by Nearby Search
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.id,places.icon',
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.id',
       },
       body: JSON.stringify(body),
     });
