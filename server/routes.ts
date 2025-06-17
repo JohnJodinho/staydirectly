@@ -142,13 +142,14 @@ Sitemap: https://staydirectly.com/sitemap.xml
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Goog-Api-Key': process.env.VITE_GOOGLE_MAPS_API_KEY! // <- API key in header
+        'X-Goog-Api-Key': process.env.GOOGLE_API_KEY!, // <- make sure this is set in .env
+        'X-Goog-FieldMask': 'places.displayName,places.vicinity,places.icon,places.id'
       },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      console.error(await response.text()); // See what Google responds
+      console.error(await response.text()); // See what Google responds with
       throw new Error('API responded with non-200');
     }
     const data = await response.json();
