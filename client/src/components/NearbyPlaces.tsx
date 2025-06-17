@@ -1,11 +1,10 @@
 // src/components/NearbyPlaces.tsx
 import React, { useEffect, useState } from "react";
-import { MapPin } from "lucide-react";
 
 // Define Type for nearby place
 interface Place {
-  place_id: string;
-  name: string;
+  id: string;
+  displayName: { text: string };
   vicinity: string;
   icon: string;
 }
@@ -34,8 +33,8 @@ export default function NearbyPlaces({ latitude, longitude, radius = 2000, types
           if (status === google.maps.places.PlacesServiceStatus.OK && results) {
             setPlaces(
               results.slice(0, 10).map((p) => ({
-                place_id: p.place_id,
-                name: p.name,
+                id: p.place_id,
+                displayName: { text: p.name },
                 vicinity: p.vicinity,
                 icon: p.icon,
               }))
@@ -91,12 +90,12 @@ export default function NearbyPlaces({ latitude, longitude, radius = 2000, types
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
         {places.length > 0 ? (
           places.map((place) => (
-            <div key={place.place_id} className="flex items-center justify-between">
+            <div key={place.id} className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="bg-gray-50 p-2 rounded-full mr-3">
                    <img src={place.icon} alt="" className="h-4 w-4" />
                 </div>
-                <span>{place.name}</span>
+                <span>{place.displayName.text}</span>
               </div>
             </div>
           ))
@@ -107,4 +106,4 @@ export default function NearbyPlaces({ latitude, longitude, radius = 2000, types
       </div>
     </div>
   )
-}
+         }
