@@ -1,44 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import '../lib/revyoos.css';
 import ReviewFallback from './ReviewFallback';
-import { useToast } from '@/hooks/use-toast';
+
 
 interface RevyoosDirectEmbedProps {
-  reviewWidgetCode?: string; // Now expects only the Revyoos token
+  propertyId?: string; // Not used in this implementation
   className?: string;
 }
 
 /**
- * RevyoosDirectEmbed dynamically injects the Revyoos review widget based on the provided token.
- * If the widget fails to load, a styled fallback is shown.
+ * RevyoosDirectEmbed uses a direct script tag approach for embedding the Revyoos widget
+ * This exactly matches the implementation requested by the user
  */
 const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({ 
-  reviewWidgetCode,
   className = "w-full h-auto min-h-[600px]" 
 }) => {
   const [isRevyoosLoaded, setIsRevyoosLoaded] = useState(false);
   const [loadAttempts, setLoadAttempts] = useState(0);
   const [useFallback, setUseFallback] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
-    if (!reviewWidgetCode) return;
-
+    // Remove any existing unwanted widget
     const removeUnwantedWidget = () => {
       const unwantedWidget = document.querySelector('[id^="scp_iframe_general_"]');
-      if (unwantedWidget) unwantedWidget.remove();
+      if (unwantedWidget) {
+        unwantedWidget.remove();
+      }
     };
 
+    // Clear any old script
     const existingScript = document.querySelector('script[data-revyoos-widget]');
-    if (existingScript) existingScript.remove();
+    if (existingScript) {
+      existingScript.remove();
+    }
 
+    // Inject the Revyoos script
     const script = document.createElement('script');
     script.defer = true;
     script.type = 'application/javascript';
     script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
-    script.setAttribute('data-revyoos-widget', reviewWidgetCode);
+    script.setAttribute('data-revyoos-widget', 'eyJwIjoiNjVlMGZiNTg5MjBlYWEwMDYxMjdlNWVjIn0=');
     document.head.appendChild(script);
 
+    // Widget detection and retry logic
     const checkRevyoosWidget = () => {
       const revyoosWidget = document.querySelector('.revyoos-embed-widget .ry-widget');
       if (revyoosWidget) {
@@ -48,38 +52,43 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
         setTimeout(checkRevyoosWidget, 2000);
       } else {
         setUseFallback(true);
-
-        toast({
-          title: 'Reviews Widget Failed to Load',
-          description: 'We could not load the Revyoos review widget after multiple attempts. Showing fallback reviews instead.',
-          variant: 'destructive',
-          duration: 5000,
-        });
       }
     };
 
+    // Start checking for widget
     const widgetCheckTimeout = setTimeout(checkRevyoosWidget, 2000);
-    const unwantedWidgetInterval = setInterval(removeUnwantedWidget, 1000);
 
+    // Repeatedly check and remove unwanted widget
+    const unwantedWidgetInterval = setInterval(() => {
+      removeUnwantedWidget();
+    }, 1000); // Every second
+
+    // Cleanup on unmount
     return () => {
       clearTimeout(widgetCheckTimeout);
       clearInterval(unwantedWidgetInterval);
-      if (script.parentNode) script.parentNode.removeChild(script);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
-  }, [reviewWidgetCode, loadAttempts, toast]);
+  }, [loadAttempts]);
 
-  if (!reviewWidgetCode) return <ReviewFallback className={className} />;
-
+  
   return (
     <div id="revyoos-container" className={className}>
+      {/* This div will be targeted by the Revyoos script */}
       <div 
         className="revyoos-embed-widget" 
-        data-revyoos-embed={reviewWidgetCode} 
+        data-revyoos-embed='eyJwIjoiNjVlMGZiNTg5MjBlYWEwMDYxMjdlNWVjIn0=' 
         style={{ opacity: isRevyoosLoaded ? 1 : 0 }}
       />
-
-      {useFallback && !isRevyoosLoaded && <ReviewFallback className="fade-in" />}
-
+      
+      {/* Show fallback component if Revyoos hasn't loaded after attempts */}
+      {useFallback && !isRevyoosLoaded && (
+        <ReviewFallback className="fade-in" />
+      )}
+      
+      {/* Show loading indicator while waiting for Revyoos */}
       {!isRevyoosLoaded && !useFallback && (
         <div className="w-full flex flex-col items-center justify-center py-12 fade-in">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full loader-spin mb-4"></div>

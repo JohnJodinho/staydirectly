@@ -10,7 +10,7 @@ import PropertyGallery from '@/components/PropertyGallery';
 import AirbnbImageOptimizer from '@/components/AirbnbImageOptimizer';
 import GoogleMapView from '@/components/GoogleMapView';
 import DynamicReviewWidget from '@/components/DynamicReviewWidget';
-import NeighborhoodInfo from '@/components/NeighborhoodInfo';
+
 import NearbyPlaces from '@/components/NearbyPlaces';
 
 // Function to convert amenity IDs to display names
@@ -645,15 +645,16 @@ const PropertyDetail: React.FC = () => {
                   <span className="text-gray-600">({property.reviewCount || '84'} reviews)</span>
                 </div>
               </div>
-              
-              {/* Using the RevyoosDirectEmbed component with fallback UI */}
+
+              {/* Using the updated RevyoosDirectEmbed component */}
               <div className="relative w-full min-h-[600px]">
-                <DynamicReviewWidget 
-                  embedCode={property.reviewWidgetCode} 
+                <RevyoosDirectEmbed 
+                  reviewWidgetCode={property.reviewWidgetCode} 
                   className="w-full min-h-[600px]" 
                 />
               </div>
             </div>
+
             
             {/* Location Map - With Map and Neighborhood Details */}
             <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
