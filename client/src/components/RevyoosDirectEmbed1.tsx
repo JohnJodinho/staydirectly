@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../lib/revyoos.css';
 import ReviewFallback from './ReviewFallback';
 import { useToast } from '@/hooks/use-toast';
@@ -8,83 +8,84 @@ interface RevyoosDirectEmbedProps {
   className?: string;
 }
 
+/**
+ * Injects Revyoos widget exactly where rendered, mirrors working HTML behavior.
+ */
 const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   reviewWidgetCode,
   className = "w-full h-auto min-h-[600px]"
 }) => {
-  const [isRevyoosLoaded, setIsRevyoosLoaded] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!reviewWidgetCode) return;
+    if (!reviewWidgetCode || !containerRef.current) return;
 
-    setIsRevyoosLoaded(false);
-    setRetryCount(0);
+    setIsLoaded(false); // Reset state on prop change
 
-    const removeUnwantedWidget = () => {
-      const unwantedWidget = document.querySelector('[id^="scp_iframe_general_"]');
-      if (unwantedWidget) unwantedWidget.remove();
-    };
+    const container = containerRef.current;
 
-    document.querySelectorAll('script[data-revyoos-widget]').forEach(s => s.remove());
+    // Clean previous content (important for React Router navigations)
+    container.innerHTML = '';
 
+    // Create the target div
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'revyoos-embed-widget';
+    widgetDiv.setAttribute('data-revyoos-embed', reviewWidgetCode);
+    widgetDiv.style.width = '100%';
+    widgetDiv.style.minHeight = '600px';
+    container.appendChild(widgetDiv);
+
+    // Create and inject the script *within* the same container
     const script = document.createElement('script');
+    script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
     script.defer = true;
     script.type = 'application/javascript';
-    script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
     script.setAttribute('data-revyoos-widget', reviewWidgetCode);
-    document.body.appendChild(script);
+    container.appendChild(script);
 
-    const maxRetries = 5;
     let attempts = 0;
+    const maxAttempts = 5;
 
-    const checkWidgetLoaded = () => {
-      const widget = document.querySelector('.revyoos-embed-widget .ry-widget');
+    const checkWidget = () => {
+      const widget = container.querySelector('.ry-widget');
       if (widget) {
-        setIsRevyoosLoaded(true);
-      } else if (attempts < maxRetries) {
+        setIsLoaded(true);
+      } else if (attempts < maxAttempts) {
         attempts++;
-        setTimeout(checkWidgetLoaded, 2000);
+        setTimeout(checkWidget, 2000);
       } else {
         toast({
           title: 'Reviews Widget Failed to Load',
-          description: 'We could not load the Revyoos review widget after multiple attempts. Showing fallback reviews instead.',
+          description: 'We could not load the Revyoos widget after multiple attempts. Showing fallback reviews instead.',
           variant: 'destructive',
           duration: 5000,
         });
       }
     };
 
-    const widgetCheckTimeout = setTimeout(checkWidgetLoaded, 2000);
-    const unwantedInterval = setInterval(removeUnwantedWidget, 1000);
+    const widgetCheckTimeout = setTimeout(checkWidget, 2000);
 
     return () => {
       clearTimeout(widgetCheckTimeout);
-      clearInterval(unwantedInterval);
-      if (script.parentNode) script.remove();
+      container.innerHTML = '';
     };
   }, [reviewWidgetCode, toast]);
 
   if (!reviewWidgetCode) return <ReviewFallback className={className} />;
 
   return (
-    <div id="revyoos-container" className={className}>
-      <div
-        className="revyoos-embed-widget"
-        data-revyoos-embed={reviewWidgetCode}
-        style={{ opacity: isRevyoosLoaded ? 1 : 0 }}
-      />
-
-      {!isRevyoosLoaded && (
+    <div ref={containerRef} className={className}>
+      {!isLoaded && (
         <div className="w-full flex flex-col items-center justify-center py-12 fade-in">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full loader-spin mb-4"></div>
           <p className="text-gray-500">Loading reviews...</p>
         </div>
       )}
 
-      {!isRevyoosLoaded && retryCount >= 5 && (
-        <ReviewFallback className="fade-in" />
+      {!isLoaded && (
+        <ReviewFallback className="fade-in mt-4" />
       )}
     </div>
   );

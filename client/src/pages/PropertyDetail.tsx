@@ -5,7 +5,7 @@ import { getProperty, getPropertyReviews } from '@/lib/api';
 import { getIdFromSlug, slugify } from '@/lib/slugify';
 import RevyoosIframe from '@/components/RevyoosIframe';
 import RevyoosScriptWidget from '@/components/RevyoosScriptWidget';
-import RevyoosDirectEmbed from '@/components/RevyoosDirectEmbed';
+import RevyoosDirectEmbed from '@/components/RevyoosDirectEmbed1';
 import PropertyGallery from '@/components/PropertyGallery';
 import AirbnbImageOptimizer from '@/components/AirbnbImageOptimizer';
 import GoogleMapView from '@/components/GoogleMapView';
@@ -653,6 +653,8 @@ const PropertyDetail: React.FC = () => {
                   className="w-full min-h-[600px]" 
                 />
               </div>
+          
+
             </div>
 
             
