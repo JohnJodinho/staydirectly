@@ -51,7 +51,10 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
 
     const checkWidget = () => {
       const widget = document.querySelector('.revyoos-embed-widget .ry-widget');
-      if (widget) {
+      const revyoosContainer = container.querySelector('.revyoos-embed-widget') as HTMLDivElement | null;
+
+      if (widget && revyoosContainer) {
+        revyoosContainer.style.minHeight = '0px'; // Remove space after widget loads
         setIsLoaded(true);
       } else if (attempts < maxAttempts) {
         attempts++;
