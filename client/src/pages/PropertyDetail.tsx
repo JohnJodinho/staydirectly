@@ -653,6 +653,8 @@ const PropertyDetail: React.FC = () => {
                   className="w-full min-h-[600px]" 
                 />
               </div>
+              
+
           
 
             </div>

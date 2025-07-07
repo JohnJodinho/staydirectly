@@ -9,7 +9,9 @@ interface RevyoosDirectEmbedProps {
 }
 
 /**
- * Injects Revyoos widget exactly where rendered, mirrors working HTML behavior.
+ * Injects Revyoos review widget precisely where rendered.
+ * Prevents unwanted space until widget fully loads.
+ * Fallback reviews shown if widget fails after retries.
  */
 const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   reviewWidgetCode,
@@ -22,22 +24,21 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   useEffect(() => {
     if (!reviewWidgetCode || !containerRef.current) return;
 
-    setIsLoaded(false); // Reset state on prop change
+    setIsLoaded(false); // Reset state
 
     const container = containerRef.current;
 
-    // Clean previous content (important for React Router navigations)
+    // Clear previous content (important for client-side routing)
     container.innerHTML = '';
 
-    // Create the target div
+    // Create Revyoos target div
     const widgetDiv = document.createElement('div');
     widgetDiv.className = 'revyoos-embed-widget';
     widgetDiv.setAttribute('data-revyoos-embed', reviewWidgetCode);
-    widgetDiv.style.width = '100%';
-    widgetDiv.style.minHeight = '600px';
+    widgetDiv.style.display = 'none'; // Hide until widget fully loads
     container.appendChild(widgetDiv);
 
-    // Create and inject the script *within* the same container
+    // Inject Revyoos script
     const script = document.createElement('script');
     script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
     script.defer = true;
@@ -51,6 +52,7 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
     const checkWidget = () => {
       const widget = container.querySelector('.ry-widget');
       if (widget) {
+        widgetDiv.style.display = 'block'; // Show widget container
         setIsLoaded(true);
       } else if (attempts < maxAttempts) {
         attempts++;
@@ -58,7 +60,7 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
       } else {
         toast({
           title: 'Reviews Widget Failed to Load',
-          description: 'We could not load the Revyoos widget after multiple attempts. Showing fallback reviews instead.',
+          description: 'We could not load the Revyoos review widget after multiple attempts. Showing fallback reviews instead.',
           variant: 'destructive',
           duration: 5000,
         });
@@ -76,7 +78,7 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   if (!reviewWidgetCode) return <ReviewFallback className={className} />;
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={containerRef} className={className + " relative"}>
       {!isLoaded && (
         <div className="w-full flex flex-col items-center justify-center py-12 fade-in">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full loader-spin mb-4"></div>
