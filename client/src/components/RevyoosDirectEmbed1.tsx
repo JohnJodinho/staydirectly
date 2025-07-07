@@ -8,11 +8,6 @@ interface RevyoosDirectEmbedProps {
   className?: string;
 }
 
-/**
- * Injects Revyoos review widget precisely where rendered.
- * Prevents unwanted space until widget fully loads.
- * Fallback reviews shown if widget fails after retries.
- */
 const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   reviewWidgetCode,
   className = "w-full h-auto min-h-[600px]"
@@ -24,35 +19,39 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   useEffect(() => {
     if (!reviewWidgetCode || !containerRef.current) return;
 
-    setIsLoaded(false); // Reset state
+    setIsLoaded(false);
 
     const container = containerRef.current;
 
-    // Clear previous content (important for client-side routing)
+    // Clear any old widget content from this area
     container.innerHTML = '';
 
-    // Create Revyoos target div
+    // Create visible placeholder div exactly where widget should appear
     const widgetDiv = document.createElement('div');
     widgetDiv.className = 'revyoos-embed-widget';
     widgetDiv.setAttribute('data-revyoos-embed', reviewWidgetCode);
-    widgetDiv.style.display = 'none'; // Hide until widget fully loads
+    widgetDiv.style.width = '100%';
+    widgetDiv.style.minHeight = '600px';
     container.appendChild(widgetDiv);
 
-    // Inject Revyoos script
+    // Remove any existing global widget script
+    document.querySelectorAll('script[data-revyoos-widget]').forEach(s => s.remove());
+
+    // Inject Revyoos script globally (document.body) AFTER widget div exists
     const script = document.createElement('script');
     script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
     script.defer = true;
     script.type = 'application/javascript';
     script.setAttribute('data-revyoos-widget', reviewWidgetCode);
-    container.appendChild(script);
+    document.body.appendChild(script);
 
+    // Poll to check if widget injected successfully
     let attempts = 0;
     const maxAttempts = 5;
 
     const checkWidget = () => {
-      const widget = container.querySelector('.ry-widget');
+      const widget = document.querySelector('.revyoos-embed-widget .ry-widget');
       if (widget) {
-        widgetDiv.style.display = 'block'; // Show widget container
         setIsLoaded(true);
       } else if (attempts < maxAttempts) {
         attempts++;
@@ -71,6 +70,7 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
 
     return () => {
       clearTimeout(widgetCheckTimeout);
+      if (script.parentNode) script.remove();
       container.innerHTML = '';
     };
   }, [reviewWidgetCode, toast]);
@@ -78,14 +78,13 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   if (!reviewWidgetCode) return <ReviewFallback className={className} />;
 
   return (
-    <div ref={containerRef} className={className + " relative"}>
+    <div ref={containerRef} className={className}>
       {!isLoaded && (
         <div className="w-full flex flex-col items-center justify-center py-12 fade-in">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full loader-spin mb-4"></div>
           <p className="text-gray-500">Loading reviews...</p>
         </div>
       )}
-
       {!isLoaded && (
         <ReviewFallback className="fade-in mt-4" />
       )}
