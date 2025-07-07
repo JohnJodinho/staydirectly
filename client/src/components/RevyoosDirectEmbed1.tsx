@@ -57,14 +57,15 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
       } else if (attempts < maxAttempts) {
         attempts++;
         setTimeout(checkWidget, 2000);
-      } else {
-        toast({
-          title: 'Reviews Widget Failed to Load',
-          description: 'We could not load the Revyoos review widget after multiple attempts. Showing fallback reviews instead.',
-          variant: 'destructive',
-          duration: 5000,
-        });
       }
+      // } else {
+      //   toast({
+      //     title: 'Reviews Widget Failed to Load',
+      //     description: 'We could not load the Revyoos review widget after multiple attempts. Showing fallback reviews instead.',
+      //     variant: 'destructive',
+      //     duration: 5000,
+      //   });
+      // }
     };
 
     const widgetCheckTimeout = setTimeout(checkWidget, 2000);
