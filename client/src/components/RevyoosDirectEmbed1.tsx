@@ -9,7 +9,7 @@ interface RevyoosDirectEmbedProps {
 }
 
 /**
- * Injects embedded Revyoos widget exactly in-place, prevents layout conflicts with floating widgets.
+ * Injects Revyoos widget exactly where rendered, mirrors working HTML behavior.
  */
 const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   reviewWidgetCode,
@@ -22,11 +22,14 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
   useEffect(() => {
     if (!reviewWidgetCode || !containerRef.current) return;
 
-    setIsLoaded(false);
+    setIsLoaded(false); // Reset state on prop change
+
     const container = containerRef.current;
+
+    // Clean previous content (important for React Router navigations)
     container.innerHTML = '';
 
-    // Create target div for embedded widget only
+    // Create the target div
     const widgetDiv = document.createElement('div');
     widgetDiv.className = 'revyoos-embed-widget';
     widgetDiv.setAttribute('data-revyoos-embed', reviewWidgetCode);
@@ -34,13 +37,13 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
     widgetDiv.style.minHeight = '600px';
     container.appendChild(widgetDiv);
 
-    // Inject script into body, prevents layout conflicts
+    // Create and inject the script *within* the same container
     const script = document.createElement('script');
     script.src = 'https://www.revyoos.com/js/widgetBuilder.js';
     script.defer = true;
     script.type = 'application/javascript';
     script.setAttribute('data-revyoos-widget', reviewWidgetCode);
-    document.body.appendChild(script);
+    container.appendChild(script);
 
     let attempts = 0;
     const maxAttempts = 5;
@@ -67,7 +70,6 @@ const RevyoosDirectEmbed: React.FC<RevyoosDirectEmbedProps> = ({
     return () => {
       clearTimeout(widgetCheckTimeout);
       container.innerHTML = '';
-      if (script.parentNode) script.remove();
     };
   }, [reviewWidgetCode, toast]);
 
